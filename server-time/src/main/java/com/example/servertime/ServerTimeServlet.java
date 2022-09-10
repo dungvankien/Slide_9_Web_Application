@@ -1,0 +1,35 @@
+package com.example.servertime;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.servlet.annotation.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Date;
+
+@WebServlet(name = "ServerTimeServlet", urlPatterns = "/index")
+public class ServerTimeServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        PrintWriter writer = response.getWriter();
+        writer.println("<html>");
+        Date today=new Date();
+        writer.println("<h1>"+today+"</h1>");
+        writer.println("</html>");
+    }
+
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.service(req, resp);
+    }
+
+    @Override
+    public void init() throws ServletException {
+        System.out.println("Hello World");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+    }
+}
