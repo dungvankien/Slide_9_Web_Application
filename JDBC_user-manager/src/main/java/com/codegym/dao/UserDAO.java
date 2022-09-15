@@ -155,6 +155,60 @@ public class UserDAO implements IUserDAO {
         callableStatement.executeUpdate();
     }
 
+    @Override
+    public void addUserTransaction(User user, int[] permisions) {
+        Connection connection =null;
+        PreparedStatement preparedStatement = null;
+        PreparedStatement preparedStatementAssignment = null;
+        ResultSet rs = null;
+        connection = getConnection();
+        try {
+            connection.setAutoCommit(false);
+            preparedStatement = connection.prepareStatement(INSERT_USERS_SQL, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1,user.getName());
+            preparedStatement.setString(2,user.getEmail());
+            preparedStatement.setString(3,user.getCountry());
+
+            int rowAffected = preparedStatement.executeUpdate();
+
+            rs = preparedStatement.getGeneratedKeys();
+            int userId = 0;
+            if (rs.next()) {
+                userId = rs.getInt(1);
+            }
+            if(rowAffected == 1){
+                String sqlPivot = "INSERT INTO user_permision(user_id, permision_id) Values(?,?)";
+                preparedStatementAssignment = connection.prepareStatement(sqlPivot);
+                for (int permisionId: permisions){
+                    preparedStatementAssignment.setInt(1,userId);
+                    preparedStatementAssignment.setInt(2,permisionId);
+                    preparedStatementAssignment.executeUpdate();
+                }
+                connection.commit();
+            } else {
+                connection.rollback();
+            }
+        } catch (SQLException e) {
+           if(connection != null){
+               try {
+                   connection.rollback();
+               } catch (SQLException ex) {
+                   System.out.println(ex.getMessage());
+               }
+           }
+            System.out.println(e.getMessage());
+        } finally {
+            try {
+                if(rs !=null) rs.close();
+                if(preparedStatement != null) preparedStatement.close();
+                if (preparedStatementAssignment != null)  preparedStatementAssignment.close();
+                if (connection != null) connection.close();
+            }catch (SQLException e){
+                System.out.println(e.getMessage());
+            }
+        }
+    }
+
     private void printSQLException(SQLException ex) {
         for (Throwable e : ex) {
             if (e instanceof SQLException) {
